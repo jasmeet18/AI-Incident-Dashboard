@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Incident Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- React CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script>
+    const { useState } = React;
+    const { createRoot } = ReactDOM;
+
+    function App() {
+      const [incidents, setIncidents] = useState([
+        { id: 1, title: "Biased Recommendation Algorithm", description: "Algorithm consistently favored certain demographics...", severity: "Medium", reported_at: "2025-03-15T10:00:00Z" },
+        { id: 2, title: "LLM Hallucination in Critical Info", description: "LLM provided incorrect safety procedure information...", severity: "High", reported_at: "2025-04-01T14:30:00Z" },
+        { id: 3, title: "Minor Data Leak via Chatbot", description: "Chatbot inadvertently exposed non-sensitive user metadata...", severity: "Low", reported_at: "2025-03-20T09:15:00Z" },
+        {
+  id: 4,
+  title: "Autonomous Car Navigation Error",
+  description: "An autonomous vehicle misinterpreted a stop sign due to adversarial graffiti, causing a minor accident.",
+  severity: "High",
+  reported_at: "2025-02-10T08:45:00Z",
+  expanded: false
+},
+{
+  id: 5,
+  title: "AI-generated Fake News Spread",
+  description: "An AI system generated a convincing but false news article that went viral before detection.",
+  severity: "Medium",
+  reported_at: "2025-01-25T12:00:00Z",
+  expanded: false
+},
+{
+  id: 6,
+  title: "Facial Recognition Misidentification",
+  description: "An AI-based surveillance system wrongly flagged a citizen as a suspect, leading to a wrongful arrest.",
+  severity: "High",
+  reported_at: "2025-03-05T11:20:00Z",
+  expanded: false
+},
+{
+  id: 7,
+  title: "Medical Diagnosis AI Misclassification",
+  description: "An AI misdiagnosed a benign tumor as malignant, leading to unnecessary procedures.",
+  severity: "High",
+  reported_at: "2025-02-18T15:40:00Z",
+  expanded: false
+},
+{
+  id: 8,
+  title: "Toxic Language Generation",
+  description: "A chatbot deployed for customer support generated offensive replies due to training data biases.",
+  severity: "Medium",
+  reported_at: "2025-04-05T16:10:00Z",
+  expanded: false
+},
+{
+  id: 9,
+  title: "Content Moderation AI Failure",
+  description: "Automated content moderation incorrectly banned educational content discussing sensitive topics.",
+  severity: "Low",
+  reported_at: "2025-03-22T13:05:00Z",
+  expanded: false
+},
+{
+  id: 10,
+  title: "Financial Trading Bot Anomaly",
+  description: "An AI trading bot overreacted to false signals and caused a significant flash crash for a brief period.",
+  severity: "High",
+  reported_at: "2025-02-28T09:00:00Z",
+  expanded: false
+}
+
+      ]);
+
+      const [filterSeverity, setFilterSeverity] = useState('All');
+      const [sortOrder, setSortOrder] = useState('newest');
+      const [newIncident, setNewIncident] = useState({ title: '', description: '', severity: 'Low' });
+
+      const handleAddIncident = () => {
+        if (!newIncident.title.trim() || !newIncident.description.trim()) {
+          alert('Please fill in all fields.');
+          return;
+        }
+        const newEntry = {
+          id: Date.now(),
+          title: newIncident.title,
+          description: newIncident.description,
+          severity: newIncident.severity,
+          reported_at: new Date().toISOString(),
+        };
+        setIncidents([...incidents, newEntry]);
+        setNewIncident({ title: '', description: '', severity: 'Low' });
+      };
+
+      const toggleDetails = (id) => {
+        setIncidents(prev =>
+          prev.map(incident =>
+            incident.id === id ? { ...incident, expanded: !incident.expanded } : incident
+          )
+        );
+      };
+
+      const filteredIncidents = incidents
+        .filter(incident => filterSeverity === 'All' || incident.severity === filterSeverity)
+        .sort((a, b) => sortOrder === 'newest'
+          ? new Date(b.reported_at) - new Date(a.reported_at)
+          : new Date(a.reported_at) - new Date(b.reported_at)
+        );
+
+      return (
+        React.createElement('div', { className: 'container' },
+          React.createElement('h1', null, 'AI Safety Incident Dashboard'),
+
+          React.createElement('div', { className: 'controls' },
+            React.createElement('div', null,
+              React.createElement('label', null, 'Filter by Severity: '),
+              React.createElement('select', { value: filterSeverity, onChange: e => setFilterSeverity(e.target.value) },
+                React.createElement('option', { value: 'All' }, 'All'),
+                React.createElement('option', { value: 'Low' }, 'Low'),
+                React.createElement('option', { value: 'Medium' }, 'Medium'),
+                React.createElement('option', { value: 'High' }, 'High')
+              )
+            ),
+            React.createElement('div', null,
+              React.createElement('label', null, 'Sort by Date: '),
+              React.createElement('select', { value: sortOrder, onChange: e => setSortOrder(e.target.value) },
+                React.createElement('option', { value: 'newest' }, 'Newest First'),
+                React.createElement('option', { value: 'oldest' }, 'Oldest First')
+              )
+            )
+          ),
+
+          React.createElement('div', { className: 'incident-list' },
+            filteredIncidents.map(incident =>
+              React.createElement('div', { key: incident.id, className: 'incident-card' },
+                React.createElement('div', { className: 'incident-header' },
+                  React.createElement('div', null,
+                    React.createElement('h3', null, incident.title),
+                    React.createElement('p', null, `Severity: ${incident.severity}`),
+                    React.createElement('p', null, `Reported: ${new Date(incident.reported_at).toLocaleDateString()}`)
+                  ),
+                  React.createElement('button', { onClick: () => toggleDetails(incident.id) },
+                    incident.expanded ? 'Hide Details' : 'View Details'
+                  )
+                ),
+                incident.expanded && React.createElement('div', { className: 'details' }, incident.description)
+              )
+            )
+          ),
+
+          React.createElement('div', { className: 'new-incident-form' },
+            React.createElement('h2', null, 'Report New Incident'),
+            React.createElement('input', {
+              type: 'text',
+              placeholder: 'Title',
+              value: newIncident.title,
+              onChange: (e) => setNewIncident({ ...newIncident, title: e.target.value })
+            }),
+            React.createElement('textarea', {
+              placeholder: 'Description',
+              value: newIncident.description,
+              onChange: (e) => setNewIncident({ ...newIncident, description: e.target.value })
+            }),
+            React.createElement('select', {
+              value: newIncident.severity,
+              onChange: (e) => setNewIncident({ ...newIncident, severity: e.target.value })
+            },
+              React.createElement('option', { value: 'Low' }, 'Low'),
+              React.createElement('option', { value: 'Medium' }, 'Medium'),
+              React.createElement('option', { value: 'High' }, 'High')
+            ),
+            React.createElement('button', { onClick: handleAddIncident }, 'Submit')
+          )
+        )
+      );
+    }
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
+</body>
+</html>
